@@ -410,12 +410,13 @@ def register_routes(app):
     @app.route('/user-test')
     @login_required
     def user_test():
-        # Show available test types for the user
-        test_types = TestType.query.join(TestAllocation).filter(
-            TestAllocation.user_id == current_user.id,
-            TestAllocation.status == 'allocated'
+        # Get test allocations for the current user
+        allocations = TestAllocation.query.filter_by(
+            user_id=current_user.id,
+            status='allocated'
         ).all()
 
+        test_types = [allocation.test_type for allocation in allocations]
         return render_template('user_test.html', test_types=test_types)
 
     @app.route('/start-test', methods=['POST'])
