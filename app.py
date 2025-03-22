@@ -44,8 +44,7 @@ def create_app():
         # Register blueprints/routes
         register_routes(app)
         
-        # Recreate database tables
-        db.drop_all()
+        # Create database tables
         db.create_all()
     
     return app
