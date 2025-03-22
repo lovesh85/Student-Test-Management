@@ -7,6 +7,9 @@ import random
 
 from app import db
 from models import User, VerificationToken, TestType, TestMaster, TestAllocation, TestSession, TestAnswer
+
+# Create or update database tables
+db.create_all()
 from forms import LoginForm, SignupForm, AddUserForm, TestTypeForm, TestMasterForm
 from utils import save_profile_picture, send_verification_email, save_question_image
 
