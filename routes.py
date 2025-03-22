@@ -129,8 +129,20 @@ def register_routes(app):
     @app.route('/users')
     @login_required
     def users():
-        users = User.query.all()
-        return render_template('users.html', users=users)
+        search_query = request.args.get('search', '')
+        
+        if search_query:
+            # Search in first name, last name, or email
+            users = User.query.filter(
+                (User.first_name.ilike(f'%{search_query}%')) |
+                (User.last_name.ilike(f'%{search_query}%')) |
+                (User.email.ilike(f'%{search_query}%')) |
+                (User.phone.ilike(f'%{search_query}%'))
+            ).all()
+        else:
+            users = User.query.all()
+            
+        return render_template('users.html', users=users, search_query=search_query)
     
     @app.route('/add-user', methods=['GET', 'POST'])
     @login_required

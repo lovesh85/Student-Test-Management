@@ -50,23 +50,23 @@
         }
         
         h1 {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             color: #343a40;
         }
         
-        .user-list-header {
+        .action-bar {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
         }
         
-        .search-container {
+        .search-box {
             display: flex;
+            gap: 10px;
         }
         
-        .search-box {
-            margin-right: 10px;
+        .search-input {
+            width: 250px;
         }
         
         .add-user-btn {
@@ -80,51 +80,46 @@
         }
         
         .user-table {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 1px solid #e9ecef;
-            margin-bottom: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
-        .profile-img-small {
+        .user-image {
             width: 40px;
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
         }
         
-        .action-buttons {
+        .action-icons {
             display: flex;
-            gap: 5px;
+            gap: 10px;
         }
         
-        .btn-edit {
-            color: #ffc107;
+        .action-icons a {
+            color: #6c757d;
+            text-decoration: none;
         }
         
-        .btn-delete {
+        .action-icons a:hover {
+            color: #343a40;
+        }
+        
+        .edit-icon {
+            color: #6f42c1;
+        }
+        
+        .delete-icon {
             color: #dc3545;
         }
         
-        .practicum-footer {
-            background: #f8f9fa;
-            padding: 20px;
+        .footer-info {
+            background-color: #f1f3f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 30px;
             text-align: center;
-            margin-top: 20px;
-            border-radius: 10px;
-        }
-        
-        .btn-practicum {
-            background-color: #6f42c1;
-            border-color: #6f42c1;
-            color: white;
-        }
-        
-        .btn-practicum:hover {
-            background-color: #5a32a3;
-            border-color: #5a32a3;
-            color: white;
         }
     </style>
 </head>
@@ -144,24 +139,20 @@
         
         <!-- Main Content -->
         <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1>User List</h1>
-                <button class="btn btn-sm btn-light d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#userFilters">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
+            <h1>User List</h1>
             
-            <!-- User List Header with Search and Add button -->
-            <div id="userFilters" class="user-list-header collapse d-md-flex">
-                <div class="search-container">
-                    <input type="text" class="form-control search-box" placeholder="Search">
-                    <button class="btn btn-primary">Search</button>
+            <div class="action-bar">
+                <div class="search-box">
+                    <form action="{{ url_for('users') }}" method="GET" class="d-flex">
+                        <input type="text" name="search" class="form-control search-input" placeholder="Search" value="{{ search_query if search_query }}">
+                        <button type="submit" class="btn btn-primary" style="background-color: #6f42c1; border-color: #6f42c1;">Search</button>
+                    </form>
                 </div>
+                
                 <a href="{{ url_for('add_user') }}" class="btn btn-primary add-user-btn">Add user</a>
             </div>
             
-            <!-- User Table -->
-            <div class="table-responsive user-table">
+            <div class="user-table">
                 <table class="table table-hover">
                     <thead>
                         <tr>
@@ -181,9 +172,9 @@
                             <td>{{ user.id }}</td>
                             <td>
                                 {% if user.profile_picture %}
-                                <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="User Image" class="profile-img-small">
+                                <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) }}" alt="User Image" class="user-image">
                                 {% else %}
-                                <img src="{{ url_for('static', filename='img/default-avatar.png') }}" alt="User Image" class="profile-img-small">
+                                <img src="{{ url_for('static', filename='images/default-avatar.png') }}" alt="User Image" class="user-image">
                                 {% endif %}
                             </td>
                             <td>{{ user.first_name }}</td>
@@ -191,21 +182,24 @@
                             <td>{{ user.email }}</td>
                             <td>{{ user.phone }}</td>
                             <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                            <td class="action-buttons">
-                                <a href="#" class="btn-edit"><i class="fas fa-edit"></i></a>
-                                <a href="#" class="btn-delete"><i class="fas fa-trash"></i></a>
+                            <td class="action-icons">
+                                <a href="#" class="edit-icon"><i class="fas fa-edit"></i></a>
+                                <a href="#" class="delete-icon"><i class="fas fa-trash-alt"></i></a>
                             </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">No users found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             
-            <!-- Footer Section -->
-            <div class="practicum-footer">
-                <p class="mb-2">Practicum</p>
-                <p class="mb-3">Practicum - Knowledge Test Application</p>
-                <button class="btn btn-practicum">Knowledge Test Application</button>
+            <div class="footer-info">
+                <p class="mb-0">Practicum</p>
+                <p class="mb-0">Practicum - Knowledge Test Application</p>
+                <a href="#" class="btn btn-primary mt-2" style="background-color: #6f42c1; border-color: #6f42c1;">Knowledge Test Application</a>
             </div>
         </div>
     </div>
