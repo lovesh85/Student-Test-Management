@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Test Type{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h1 class="h3 mb-0">Add Test type</h1>
+                </div>
+                <div class="card-body">
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="id" class="form-label">Id</label>
+                            <input type="text" class="form-control" id="id" disabled>
+                            <div class="form-text">ID will be auto-generated</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.test_type.label(class="form-label") }}
+                            {{ form.test_type(class="form-control") }}
+                            {% if form.test_type.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.test_type.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.language.label(class="form-label") }}
+                            {{ form.language(class="form-control") }}
+                            {% if form.language.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.language.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid mt-4">
+                            {{ form.submit(class="btn btn-purple") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

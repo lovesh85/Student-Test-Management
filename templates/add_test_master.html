@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Test Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="h3 mb-0">Add Test Master</h1>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.test_type_id.label(class="form-label") }}
+                            {{ form.test_type_id(class="form-select") }}
+                            {% if form.test_type_id.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.test_type_id.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.question.label(class="form-label") }}
+                            {{ form.question(class="form-control") }}
+                            {% if form.question.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.question.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.question_image.label(class="form-label") }}
+                    {{ form.question_image(class="form-control") }}
+                    {% if form.question_image.errors %}
+                        <div class="text-danger">
+                            {% for error in form.question_image.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.answer_a.label(class="form-label") }}
+                            {{ form.answer_a(class="form-control") }}
+                            {% if form.answer_a.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.answer_a.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.answer_b.label(class="form-label") }}
+                            {{ form.answer_b(class="form-control") }}
+                            {% if form.answer_b.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.answer_b.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.answer_c.label(class="form-label") }}
+                            {{ form.answer_c(class="form-control") }}
+                            {% if form.answer_c.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.answer_c.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            {{ form.answer_d.label(class="form-label") }}
+                            {{ form.answer_d(class="form-control") }}
+                            {% if form.answer_d.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.answer_d.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    {{ form.correct_answer.label(class="form-label") }}
+                    {{ form.correct_answer(class="form-select") }}
+                    {% if form.correct_answer.errors %}
+                        <div class="text-danger">
+                            {% for error in form.correct_answer.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid mt-4">
+                    {{ form.submit(class="btn btn-purple") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

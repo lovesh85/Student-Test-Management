@@ -107,21 +107,22 @@ def register_routes(app):
     @app.route('/dashboard')
     @login_required
     def dashboard():
-        # Dashboard statistics 
-        # In a real app, this would be actual data from the database
+        # Dashboard statistics from actual database
         total_students = User.query.count()
         new_students = User.query.filter(
             User.created_at >= datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         ).count()
+        test_types_count = TestType.query.count()
         
-        # For demo purposes, we're using some sample values
+        # Get data from database for statistics
+        # We'll add the test attempts stats when that feature is implemented
         stats = {
             'total_students': total_students,
             'new_students': new_students,
-            'test_types': 4,
-            'total_attempts': 84,
-            'passed_attempts': 47,
-            'failed_attempts': 37
+            'test_types': test_types_count,
+            'total_attempts': 0,
+            'passed_attempts': 0,
+            'failed_attempts': 0
         }
         
         return render_template('dashboard.html', stats=stats)
@@ -176,12 +177,72 @@ def register_routes(app):
     @app.route('/test-type')
     @login_required
     def test_type():
-        return render_template('test_type.html')
+        search_query = request.args.get('search', '')
+        if search_query:
+            test_types = TestType.query.filter(
+                (TestType.test_type.ilike(f'%{search_query}%')) |
+                (TestType.language.ilike(f'%{search_query}%'))
+            ).all()
+        else:
+            test_types = TestType.query.all()
+        return render_template('test_type.html', test_types=test_types, search_query=search_query)
+    
+    @app.route('/add-test-type', methods=['GET', 'POST'])
+    @login_required
+    def add_test_type():
+        form = TestTypeForm()
+        if form.validate_on_submit():
+            test_type = TestType(
+                test_type=form.test_type.data,
+                language=form.language.data
+            )
+            db.session.add(test_type)
+            db.session.commit()
+            flash('Test Type added successfully!', 'success')
+            return redirect(url_for('test_type'))
+        return render_template('add_test_type.html', form=form)
+    
+    @app.route('/delete-test-type/<int:id>', methods=['POST'])
+    @login_required
+    def delete_test_type(id):
+        test_type = TestType.query.get_or_404(id)
+        db.session.delete(test_type)
+        db.session.commit()
+        flash('Test Type deleted successfully!', 'success')
+        return redirect(url_for('test_type'))
     
     @app.route('/test-master')
     @login_required
     def test_master():
-        return render_template('test_master.html')
+        test_masters = TestMaster.query.all()
+        return render_template('test_master.html', test_masters=test_masters)
+        
+    @app.route('/add-test-master', methods=['GET', 'POST'])
+    @login_required
+    def add_test_master():
+        form = TestMasterForm()
+        if form.validate_on_submit():
+            # Handle question image upload
+            question_image = None
+            if form.question_image.data:
+                question_image = save_question_image(form.question_image.data)
+                
+            test_master = TestMaster(
+                test_type_id=form.test_type_id.data,
+                question=form.question.data,
+                question_image=question_image,
+                answer_a=form.answer_a.data,
+                answer_b=form.answer_b.data,
+                answer_c=form.answer_c.data,
+                answer_d=form.answer_d.data,
+                correct_answer=form.correct_answer.data,
+                created_by=current_user.id
+            )
+            db.session.add(test_master)
+            db.session.commit()
+            flash('Test Master added successfully!', 'success')
+            return redirect(url_for('test_master'))
+        return render_template('add_test_master.html', form=form)
     
     @app.route('/allocate-test')
     @login_required
@@ -209,13 +270,28 @@ def register_routes(app):
     @app.route('/api/chart-data')
     @login_required
     def chart_data():
-        # In a real app, this would be actual data from the database
-        # For demo purposes, we're using sample data
+        # Get the current year
+        current_year = datetime.utcnow().year
+        
+        # Get the counts of users registered by month for the current year
+        month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        month_data = [0] * 12  # Initialize with zeros
+        
+        # Get all users registered this year
+        users_this_year = User.query.filter(
+            db.extract('year', User.created_at) == current_year
+        ).all()
+        
+        # Count users by month
+        for user in users_this_year:
+            month_index = user.created_at.month - 1  # Adjust for 0-indexed list
+            month_data[month_index] += 1
+            
         data = {
-            'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            'labels': month_labels,
             'datasets': [{
-                'label': 'Students Test',
-                'data': [1, 0, 0, 0, 0, 0],
+                'label': 'User Registrations',
+                'data': month_data,
                 'borderColor': '#6f42c1',
                 'backgroundColor': 'transparent',
                 'tension': 0.4
