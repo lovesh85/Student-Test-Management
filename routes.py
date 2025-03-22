@@ -488,12 +488,38 @@ def register_routes(app):
                 test_answer.is_correct = (selected_answer == question.correct_answer)
                 db.session.commit()
 
-                # Redirect to next question or results
-                if question_index + 1 < len(questions):
-                    return redirect(url_for('test_question', test_session_id=test_session.id, question_index=question_index+1))
+                # If this was the last question, calculate score and complete test
+                if question_index + 1 >= len(questions):
+                    # Calculate score
+                    total_questions = len(questions)
+                    correct_answers = TestAnswer.query.filter_by(
+                        test_session_id=test_session.id,
+                        is_correct=True
+                    ).count()
+
+                    score = int((correct_answers / total_questions) * 100)
+
+                    # Update test session
+                    test_session.score = score
+                    test_session.status = 'completed'
+                    test_session.completed_at = datetime.datetime.utcnow()
+
+                    # Update test allocation status
+                    allocation = TestAllocation.query.filter_by(
+                        user_id=current_user.id,
+                        test_type_id=test_session.test_type_id,
+                        status='allocated'
+                    ).first()
+
+                    if allocation:
+                        allocation.status = 'completed'
+
+                    db.session.commit()
+
+                    return redirect(url_for('test_results', test_session_id=test_session.id))
                 else:
-                    # If this was the last question, redirect to submit page
-                    return redirect(url_for('submit_test', test_session_id=test_session.id))
+                    # Redirect to next question
+                    return redirect(url_for('test_question', test_session_id=test_session.id, question_index=question_index+1))
             else:
                 flash('Please select a valid answer.', 'warning')
 
