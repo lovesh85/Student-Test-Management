@@ -1,0 +1,102 @@
+/* General Styles */
+body {
+    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+}
+
+.auth-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: none;
+}
+
+/* Form Styles */
+.form-control {
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    padding: 10px 12px;
+}
+
+.form-control:focus {
+    border-color: #7952b3;
+    box-shadow: 0 0 0 0.2rem rgba(121, 82, 179, 0.25);
+}
+
+.toggle-password {
+    cursor: pointer;
+}
+
+/* Button Styles */
+.btn-primary, .login-button, .signup-button {
+    background-color: #7952b3 !important;
+    border-color: #7952b3 !important;
+    border-radius: 4px;
+    padding: 10px;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #6742a1 !important;
+    border-color: #6742a1 !important;
+}
+
+/* Validation Styles */
+.invalid-feedback-custom {
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 80%;
+    color: #dc3545;
+}
+
+.password-validation {
+    margin-top: 10px;
+}
+
+.password-validation .requirement {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.password-validation .requirement.valid {
+    color: #28a745;
+}
+
+.password-validation .requirement.invalid {
+    color: #dc3545;
+}
+
+/* Profile Image */
+.profile-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 3px solid #7952b3;
+}
+
+.profile-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    color: #6c757d;
+}
+
+/* Helper classes */
+.text-muted {
+    color: #6c757d !important;
+}
+
+a {
+    color: #7952b3;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #6742a1;
+    text-decoration: underline;
+}

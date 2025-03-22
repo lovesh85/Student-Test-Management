@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Your Email</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #7952b3;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Email Verification</h1>
+        </div>
+        
+        <p>Hello {{ user.first_name }},</p>
+        
+        <p>Thank you for registering! Please click the button below to verify your email address:</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ verify_url }}" class="button">Verify Email Address</a>
+        </div>
+        
+        <p>If you did not create an account, you can ignore this email.</p>
+        
+        <p>If the button above doesn't work, copy and paste the following link into your browser:</p>
+        <p style="word-break: break-all;">{{ verify_url }}</p>
+        
+        <div class="footer">
+            <p>This email was sent automatically. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

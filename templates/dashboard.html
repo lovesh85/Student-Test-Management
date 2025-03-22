@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <h2 class="text-center mb-4">Welcome, {{ current_user.first_name }}!</h2>
+    
+    <div class="user-profile text-center mb-4">
+        {% if current_user.profile_picture %}
+            <img src="{{ url_for('static', filename=current_user.profile_picture) }}" 
+                 alt="Profile Picture" class="rounded-circle profile-img">
+        {% else %}
+            <div class="profile-placeholder">
+                <i class="fas fa-user fa-5x"></i>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="user-info mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Your Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ current_user.first_name }} {{ current_user.last_name }}</p>
+                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                <p><strong>Phone:</strong> {{ current_user.phone }}</p>
+                <p><strong>Account Created:</strong> {{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-grid gap-2">
+        <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+{% endblock %}

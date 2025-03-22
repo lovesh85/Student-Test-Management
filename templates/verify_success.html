@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Email Verified{% endblock %}
+
+{% block content %}
+    <div class="text-center">
+        <h2 class="mb-4">Email Verified Successfully!</h2>
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle fa-3x mb-3"></i>
+            <p>Your email has been successfully verified. You can now login to your account.</p>
+        </div>
+        <div class="mt-4">
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Login Now</a>
+        </div>
+    </div>
+{% endblock %}
