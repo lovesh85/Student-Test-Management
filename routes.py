@@ -359,16 +359,6 @@ def register_routes(app):
             flash('Please select both a user and a test type.', 'danger')
             return redirect(url_for('allocate_test'))
 
-        # Check if current user created any questions in this test type
-        test_creator = TestMaster.query.filter_by(
-            test_type_id=test_type_id,
-            created_by=current_user.id
-        ).first()
-        
-        if test_creator:
-            flash('You cannot allocate tests that you have created.', 'danger')
-            return redirect(url_for('allocate_test'))
-
         # Check if user and test type exist
         user = User.query.get_or_404(user_id)
         test_type = TestType.query.get_or_404(test_type_id)
