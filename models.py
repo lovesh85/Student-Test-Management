@@ -20,13 +20,14 @@ class User(UserMixin, db.Model):
     # Relationship with verification tokens
     verification_tokens = db.relationship('VerificationToken', back_populates='user', cascade='all, delete-orphan')
 
-    def __init__(self, first_name, last_name, email, phone, password, profile_picture=None):
+    def __init__(self, first_name, last_name, email, phone, password, profile_picture=None, is_verified=False):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
         self.phone = phone
         self.set_password(password)
         self.profile_picture = profile_picture
+        self.is_verified = is_verified
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

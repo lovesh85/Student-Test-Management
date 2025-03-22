@@ -1,12 +1,13 @@
 import os
-from flask import render_template, redirect, url_for, flash, request, abort, current_app
+from flask import render_template, redirect, url_for, flash, request, abort, current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 from datetime import datetime
+import random
 
 from app import db
 from models import User, VerificationToken
-from forms import LoginForm, SignupForm
+from forms import LoginForm, SignupForm, AddUserForm
 from utils import save_profile_picture, send_verification_email
 
 def register_routes(app):
@@ -106,9 +107,84 @@ def register_routes(app):
     @app.route('/dashboard')
     @login_required
     def dashboard():
-        # Placeholder for future dashboard
-        flash('Welcome to your dashboard!', 'success')
-        return render_template('dashboard.html')
+        # Dashboard statistics 
+        # In a real app, this would be actual data from the database
+        total_students = User.query.count()
+        new_students = User.query.filter(
+            User.created_at >= datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        ).count()
+        
+        # For demo purposes, we're using some sample values
+        stats = {
+            'total_students': total_students,
+            'new_students': new_students,
+            'test_types': 4,
+            'total_attempts': 84,
+            'passed_attempts': 47,
+            'failed_attempts': 37
+        }
+        
+        return render_template('dashboard.html', stats=stats)
+    
+    @app.route('/users')
+    @login_required
+    def users():
+        users = User.query.all()
+        return render_template('users.html', users=users)
+    
+    @app.route('/add-user', methods=['GET', 'POST'])
+    @login_required
+    def add_user():
+        form = AddUserForm()
+        if form.validate_on_submit():
+            # Handle profile picture upload
+            profile_picture = None
+            if form.profile_picture.data:
+                profile_picture = save_profile_picture(form.profile_picture.data)
+                
+            # Create user (no email verification needed for admin-added users)
+            user = User(
+                first_name=form.first_name.data,
+                last_name=form.last_name.data,
+                email=form.email.data,
+                phone=form.phone.data,
+                password=form.password.data,
+                profile_picture=profile_picture,
+                is_verified=True  # Auto-verify users added by admin
+            )
+            
+            db.session.add(user)
+            db.session.commit()
+            
+            flash('User added successfully!', 'success')
+            return redirect(url_for('users'))
+            
+        return render_template('add_user.html', form=form)
+    
+    @app.route('/test-type')
+    @login_required
+    def test_type():
+        return render_template('test_type.html')
+    
+    @app.route('/test-master')
+    @login_required
+    def test_master():
+        return render_template('test_master.html')
+    
+    @app.route('/allocate-test')
+    @login_required
+    def allocate_test():
+        return render_template('allocate_test.html')
+    
+    @app.route('/user-test')
+    @login_required
+    def user_test():
+        return render_template('user_test.html')
+    
+    @app.route('/reports')
+    @login_required
+    def reports():
+        return render_template('reports.html')
 
     @app.route('/logout')
     @login_required
@@ -116,3 +192,21 @@ def register_routes(app):
         logout_user()
         flash('You have been logged out', 'info')
         return redirect(url_for('login'))
+    
+    # API endpoint for chart data
+    @app.route('/api/chart-data')
+    @login_required
+    def chart_data():
+        # In a real app, this would be actual data from the database
+        # For demo purposes, we're using sample data
+        data = {
+            'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            'datasets': [{
+                'label': 'Students Test',
+                'data': [1, 0, 0, 0, 0, 0],
+                'borderColor': '#6f42c1',
+                'backgroundColor': 'transparent',
+                'tension': 0.4
+            }]
+        }
+        return jsonify(data)
