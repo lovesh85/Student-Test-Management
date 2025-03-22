@@ -305,13 +305,11 @@ def register_routes(app):
     @app.route('/allocate-test', methods=['GET', 'POST'])
     @login_required
     def allocate_test():
-        # Get all test types NOT created by the current user
-        test_masters = TestMaster.query.filter(TestMaster.created_by != current_user.id).all()
-        test_type_ids = [tm.test_type_id for tm in test_masters]
-        test_types = TestType.query.filter(TestType.id.in_(test_type_ids)).all()
+        # Get all test types
+        test_types = TestType.query.all()
         
-        # Get all users except current user
-        users = User.query.filter(User.id != current_user.id).all()
+        # Get all users
+        users = User.query.all()
 
         if request.method == 'POST':
             user_id = request.form.get('user_id')
@@ -359,6 +357,16 @@ def register_routes(app):
 
         if not user_id or not test_type_id:
             flash('Please select both a user and a test type.', 'danger')
+            return redirect(url_for('allocate_test'))
+
+        # Check if the allocator created any questions for this test type
+        test_creator = TestMaster.query.filter_by(
+            test_type_id=test_type_id,
+            created_by=int(user_id)
+        ).first()
+        
+        if test_creator:
+            flash('Users cannot be allocated tests they have created.', 'danger')
             return redirect(url_for('allocate_test'))
             
         # Check if current user created any questions in this test type
