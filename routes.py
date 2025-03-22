@@ -173,6 +173,64 @@ def register_routes(app):
             return redirect(url_for('users'))
             
         return render_template('add_user.html', form=form)
+        
+    @app.route('/edit-user/<int:id>', methods=['GET', 'POST'])
+    @login_required
+    def edit_user(id):
+        user = User.query.get_or_404(id)
+        form = AddUserForm(obj=user)
+        
+        # Don't validate the password field if it's empty
+        if request.method == 'POST':
+            if not form.password.data:
+                form.password.validators = []
+        
+        if form.validate_on_submit():
+            user.first_name = form.first_name.data
+            user.last_name = form.last_name.data
+            user.email = form.email.data
+            user.phone = form.phone.data
+            
+            # Only update password if provided
+            if form.password.data:
+                user.set_password(form.password.data)
+                
+            # Handle profile picture upload
+            if form.profile_picture.data:
+                # Delete old profile picture if exists
+                if user.profile_picture:
+                    old_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], user.profile_picture)
+                    if os.path.exists(old_file_path):
+                        os.remove(old_file_path)
+                
+                user.profile_picture = save_profile_picture(form.profile_picture.data)
+            
+            db.session.commit()
+            flash('User updated successfully!', 'success')
+            return redirect(url_for('users'))
+            
+        return render_template('edit_user.html', form=form, user=user)
+        
+    @app.route('/delete-user/<int:id>')
+    @login_required
+    def delete_user(id):
+        user = User.query.get_or_404(id)
+        
+        # Don't allow deleting your own account
+        if user.id == current_user.id:
+            flash('You cannot delete your own account!', 'danger')
+            return redirect(url_for('users'))
+            
+        # Delete profile picture if exists
+        if user.profile_picture:
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], user.profile_picture)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully!', 'success')
+        return redirect(url_for('users'))
     
     @app.route('/test-type')
     @login_required
