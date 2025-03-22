@@ -4,6 +4,42 @@ from app import db, login_manager
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
+class TestType(db.Model):
+    __tablename__ = 'test_types'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    test_type = db.Column(db.String(100), nullable=False)
+    language = db.Column(db.String(50), nullable=False)
+    created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    
+    # Relationship with test masters
+    test_masters = db.relationship('TestMaster', back_populates='test_type', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<TestType {self.test_type}>'
+
+class TestMaster(db.Model):
+    __tablename__ = 'test_masters'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    test_type_id = db.Column(db.Integer, db.ForeignKey('test_types.id'), nullable=False)
+    question = db.Column(db.Text, nullable=False)
+    question_image = db.Column(db.String(256), nullable=True)
+    answer_a = db.Column(db.Text, nullable=False)
+    answer_b = db.Column(db.Text, nullable=False)
+    answer_c = db.Column(db.Text, nullable=False)
+    answer_d = db.Column(db.Text, nullable=False)
+    correct_answer = db.Column(db.String(1), nullable=False)  # A, B, C, or D
+    created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Relationships
+    test_type = db.relationship('TestType', back_populates='test_masters')
+    creator = db.relationship('User', backref='created_tests')
+    
+    def __repr__(self):
+        return f'<TestMaster {self.id}>'
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     

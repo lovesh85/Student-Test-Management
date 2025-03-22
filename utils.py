@@ -57,3 +57,30 @@ def send_verification_email(user):
     mail.send(msg)
     
     return token
+    
+def save_question_image(file):
+    """
+    Save a question image to the upload folder
+    
+    Args:
+        file: The file from the form
+    
+    Returns:
+        str: The filename of the saved file
+    """
+    if not file:
+        return None
+        
+    # Create a unique filename
+    filename = secure_filename(file.filename)
+    unique_filename = f"{uuid.uuid4().hex}_{filename}"
+    
+    # Create question_images folder if it doesn't exist
+    question_images_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], 'question_images')
+    os.makedirs(os.path.join(current_app.root_path, question_images_folder), exist_ok=True)
+    
+    # Save the file
+    file_path = os.path.join(question_images_folder, unique_filename)
+    file.save(os.path.join(current_app.root_path, file_path))
+    
+    return file_path

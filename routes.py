@@ -6,9 +6,9 @@ from datetime import datetime
 import random
 
 from app import db
-from models import User, VerificationToken
-from forms import LoginForm, SignupForm, AddUserForm
-from utils import save_profile_picture, send_verification_email
+from models import User, VerificationToken, TestType, TestMaster
+from forms import LoginForm, SignupForm, AddUserForm, TestTypeForm, TestMasterForm
+from utils import save_profile_picture, send_verification_email, save_question_image
 
 def register_routes(app):
     @app.route('/')
