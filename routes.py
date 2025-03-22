@@ -486,24 +486,16 @@ def register_routes(app):
         # Handle form submission (answer)
         if request.method == 'POST':
             selected_answer = request.form.get('answer')
-
+            test_answer = test_answer or TestAnswer(
+                test_session_id=test_session.id,
+                question_id=question.id
+            )
+            
             if selected_answer in ['A', 'B', 'C', 'D']:
-                # Find or create answer record
-                test_answer = TestAnswer.query.filter_by(
-                    test_session_id=test_session.id,
-                    question_id=question.id
-                ).first()
-
-                if not test_answer:
-                    test_answer = TestAnswer(
-                        test_session_id=test_session.id,
-                        question_id=question.id
-                    )
-                    db.session.add(test_answer)
-
-                # Update answer
                 test_answer.selected_answer = selected_answer
                 test_answer.is_correct = (selected_answer == question.correct_answer)
+                if not test_answer in db.session:
+                    db.session.add(test_answer)
                 db.session.commit()
 
                 # If this was the last question, calculate score and complete test
@@ -590,18 +582,17 @@ def register_routes(app):
             flash('This test is already completed.', 'info')
             return redirect(url_for('test_results', test_session_id=test_session.id))
 
-        # Calculate score
-        total_questions = TestAnswer.query.filter_by(test_session_id=test_session_id).count()
-        correct_answers = 0
-
         # Get all answers for this test session
         answers = TestAnswer.query.filter_by(test_session_id=test_session_id).all()
+        total_questions = len(answers)
+        correct_answers = sum(1 for answer in answers if answer.selected_answer and answer.is_correct)
 
-        for answer in answers:
-            if answer.is_correct:
-                correct_answers += 1
-
-        score = int((correct_answers / total_questions) * 100) if total_questions > 0 else 0
+        # Calculate score based on answered questions
+        answered_questions = sum(1 for answer in answers if answer.selected_answer is not None)
+        if answered_questions > 0:
+            score = int((correct_answers / total_questions) * 100)
+        else:
+            score = 0
 
         # Update test session
         test_session.completed_at = datetime.datetime.utcnow()
