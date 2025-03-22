@@ -468,6 +468,20 @@ def register_routes(app):
 
         # Get current question
         question = questions[question_index]
+        
+        # Get or create answer record
+        test_answer = TestAnswer.query.filter_by(
+            test_session_id=test_session.id,
+            question_id=question.id
+        ).first()
+        
+        if not test_answer:
+            test_answer = TestAnswer(
+                test_session_id=test_session.id,
+                question_id=question.id
+            )
+            db.session.add(test_answer)
+            db.session.commit()
 
         # Handle form submission (answer)
         if request.method == 'POST':
