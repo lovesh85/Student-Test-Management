@@ -12,8 +12,10 @@ class TestType(db.Model):
     language = db.Column(db.String(50), nullable=False)
     created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     
-    # Relationship with test masters
+    # Relationships
     test_masters = db.relationship('TestMaster', back_populates='test_type', cascade='all, delete-orphan')
+    test_allocations = db.relationship('TestAllocation', back_populates='test_type', cascade='all, delete-orphan')
+    test_sessions = db.relationship('TestSession', back_populates='test_type', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<TestType {self.test_type}>'
@@ -53,8 +55,10 @@ class User(UserMixin, db.Model):
     is_verified = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     
-    # Relationship with verification tokens
+    # Relationships
     verification_tokens = db.relationship('VerificationToken', back_populates='user', cascade='all, delete-orphan')
+    test_allocations = db.relationship('TestAllocation', foreign_keys='TestAllocation.user_id', back_populates='user', cascade='all, delete-orphan')
+    test_sessions = db.relationship('TestSession', back_populates='user', cascade='all, delete-orphan')
 
     def __init__(self, first_name, last_name, email, phone, password, profile_picture=None, is_verified=False):
         self.first_name = first_name
@@ -89,6 +93,60 @@ class VerificationToken(db.Model):
     
     def is_expired(self):
         return datetime.datetime.utcnow() > self.expires_at
+
+class TestAllocation(db.Model):
+    __tablename__ = 'test_allocations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    test_type_id = db.Column(db.Integer, db.ForeignKey('test_types.id'), nullable=False)
+    allocated_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    allocated_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    status = db.Column(db.String(20), default='allocated')  # allocated, completed, expired
+    
+    # Relationships
+    user = db.relationship('User', foreign_keys=[user_id], back_populates='test_allocations')
+    test_type = db.relationship('TestType', back_populates='test_allocations')
+    allocator = db.relationship('User', foreign_keys=[allocated_by], backref='allocated_tests')
+    
+    def __repr__(self):
+        return f'<TestAllocation {self.id}>'
+
+class TestSession(db.Model):
+    __tablename__ = 'test_sessions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    test_type_id = db.Column(db.Integer, db.ForeignKey('test_types.id'), nullable=False)
+    started_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    score = db.Column(db.Integer, nullable=True)
+    status = db.Column(db.String(20), default='in_progress')  # in_progress, completed, timed_out
+    
+    # Relationships
+    user = db.relationship('User', back_populates='test_sessions')
+    test_type = db.relationship('TestType', back_populates='test_sessions')
+    answers = db.relationship('TestAnswer', back_populates='test_session', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<TestSession {self.id}>'
+
+class TestAnswer(db.Model):
+    __tablename__ = 'test_answers'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    test_session_id = db.Column(db.Integer, db.ForeignKey('test_sessions.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('test_masters.id'), nullable=False)
+    selected_answer = db.Column(db.String(1), nullable=True)  # A, B, C, or D
+    is_correct = db.Column(db.Boolean, nullable=True)
+    answered_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    
+    # Relationships
+    test_session = db.relationship('TestSession', back_populates='answers')
+    question = db.relationship('TestMaster')
+    
+    def __repr__(self):
+        return f'<TestAnswer {self.id}>'
 
 @login_manager.user_loader
 def load_user(user_id):

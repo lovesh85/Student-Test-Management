@@ -2,11 +2,11 @@ import os
 from flask import render_template, redirect, url_for, flash, request, abort, current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 
 from app import db
-from models import User, VerificationToken, TestType, TestMaster
+from models import User, VerificationToken, TestType, TestMaster, TestAllocation, TestSession, TestAnswer
 from forms import LoginForm, SignupForm, AddUserForm, TestTypeForm, TestMasterForm
 from utils import save_profile_picture, send_verification_email, save_question_image
 
@@ -302,15 +302,301 @@ def register_routes(app):
             return redirect(url_for('test_master'))
         return render_template('add_test_master.html', form=form)
     
-    @app.route('/allocate-test')
+    @app.route('/allocate-test', methods=['GET', 'POST'])
     @login_required
     def allocate_test():
-        return render_template('allocate_test.html')
+        users = User.query.filter(User.id != current_user.id).all()
+        test_types = TestType.query.all()
+        
+        if request.method == 'POST':
+            user_id = request.form.get('user_id')
+            test_type_id = request.form.get('test_type_id')
+            
+            if not user_id or not test_type_id:
+                flash('Please select both a user and a test type.', 'danger')
+                return redirect(url_for('allocate_test'))
+            
+            # Check if user and test type exist
+            user = User.query.get_or_404(user_id)
+            test_type = TestType.query.get_or_404(test_type_id)
+            
+            # Check if this test has already been allocated to this user
+            existing_allocation = TestAllocation.query.filter_by(
+                user_id=user_id, 
+                test_type_id=test_type_id,
+                status='allocated'
+            ).first()
+            
+            if existing_allocation:
+                flash(f'This test has already been allocated to {user.first_name} {user.last_name}.', 'warning')
+                return redirect(url_for('allocate_test'))
+            
+            # Create new allocation
+            allocation = TestAllocation(
+                user_id=user_id,
+                test_type_id=test_type_id,
+                allocated_by=current_user.id
+            )
+            
+            db.session.add(allocation)
+            db.session.commit()
+            
+            flash(f'Test successfully allocated to {user.first_name} {user.last_name}.', 'success')
+            return redirect(url_for('allocate_test'))
+        
+        return render_template('allocate_test.html', users=users, test_types=test_types)
+    
+    @app.route('/allocate-test-submit', methods=['POST'])
+    @login_required
+    def allocate_test_submit():
+        user_id = request.form.get('user_id')
+        test_type_id = request.form.get('test_type_id')
+        
+        if not user_id or not test_type_id:
+            flash('Please select both a user and a test type.', 'danger')
+            return redirect(url_for('allocate_test'))
+        
+        # Check if user and test type exist
+        user = User.query.get_or_404(user_id)
+        test_type = TestType.query.get_or_404(test_type_id)
+        
+        # Check if this test has already been allocated to this user
+        existing_allocation = TestAllocation.query.filter_by(
+            user_id=user_id, 
+            test_type_id=test_type_id,
+            status='allocated'
+        ).first()
+        
+        if existing_allocation:
+            flash(f'This test has already been allocated to {user.first_name} {user.last_name}.', 'warning')
+            return redirect(url_for('allocate_test'))
+        
+        # Create new allocation
+        allocation = TestAllocation(
+            user_id=user_id,
+            test_type_id=test_type_id,
+            allocated_by=current_user.id
+        )
+        
+        db.session.add(allocation)
+        db.session.commit()
+        
+        flash(f'Test successfully allocated to {user.first_name} {user.last_name}.', 'success')
+        return redirect(url_for('allocate_test'))
     
     @app.route('/user-test')
     @login_required
     def user_test():
-        return render_template('user_test.html')
+        # Show available test types for the user
+        test_types = TestType.query.join(TestAllocation).filter(
+            TestAllocation.user_id == current_user.id,
+            TestAllocation.status == 'allocated'
+        ).all()
+        
+        return render_template('user_test.html', test_types=test_types)
+    
+    @app.route('/start-test', methods=['POST'])
+    @login_required
+    def start_test():
+        test_type_id = request.form.get('test_type_id')
+        
+        if not test_type_id:
+            flash('Please select a test type.', 'danger')
+            return redirect(url_for('user_test'))
+        
+        # Check if this test type exists and is allocated to the user
+        allocation = TestAllocation.query.filter_by(
+            user_id=current_user.id,
+            test_type_id=test_type_id,
+            status='allocated'
+        ).first_or_404()
+        
+        # Get all questions for this test type
+        questions = TestMaster.query.filter_by(test_type_id=test_type_id).all()
+        
+        if not questions:
+            flash('No questions available for this test.', 'warning')
+            return redirect(url_for('user_test'))
+        
+        # Create a new test session
+        test_session = TestSession(
+            user_id=current_user.id,
+            test_type_id=test_type_id
+        )
+        
+        db.session.add(test_session)
+        db.session.commit()
+        
+        # Create test answers for each question (initially with no selected answer)
+        for question in questions:
+            test_answer = TestAnswer(
+                test_session_id=test_session.id,
+                question_id=question.id
+            )
+            db.session.add(test_answer)
+        
+        db.session.commit()
+        
+        # Redirect to the first question
+        return redirect(url_for('test_question', test_session_id=test_session.id, question_index=0))
+    
+    @app.route('/test-question/<int:test_session_id>/<int:question_index>', methods=['GET', 'POST'])
+    @login_required
+    def test_question(test_session_id, question_index):
+        # Verify that this test session belongs to the current user
+        test_session = TestSession.query.filter_by(
+            id=test_session_id,
+            user_id=current_user.id
+        ).first_or_404()
+        
+        # If test is completed, redirect to results
+        if test_session.status != 'in_progress':
+            flash('This test is already completed.', 'info')
+            return redirect(url_for('test_results', test_session_id=test_session.id))
+        
+        # Get all questions for this test
+        questions = TestMaster.query.filter_by(test_type_id=test_session.test_type_id).all()
+        
+        # Check if question index is valid
+        if question_index < 0 or question_index >= len(questions):
+            flash('Invalid question index.', 'danger')
+            return redirect(url_for('user_test'))
+        
+        # Get current question
+        question = questions[question_index]
+        
+        # Handle form submission (answer)
+        if request.method == 'POST':
+            selected_answer = request.form.get('answer')
+            
+            if selected_answer in ['A', 'B', 'C', 'D']:
+                # Find or create answer record
+                test_answer = TestAnswer.query.filter_by(
+                    test_session_id=test_session.id,
+                    question_id=question.id
+                ).first()
+                
+                if not test_answer:
+                    test_answer = TestAnswer(
+                        test_session_id=test_session.id,
+                        question_id=question.id
+                    )
+                    db.session.add(test_answer)
+                
+                # Update answer
+                test_answer.selected_answer = selected_answer
+                test_answer.is_correct = (selected_answer == question.correct_answer)
+                db.session.commit()
+                
+                # Redirect to next question or results
+                if question_index + 1 < len(questions):
+                    return redirect(url_for('test_question', test_session_id=test_session.id, question_index=question_index+1))
+                else:
+                    # If this was the last question, redirect to submit page
+                    return redirect(url_for('submit_test', test_session_id=test_session.id))
+            else:
+                flash('Please select a valid answer.', 'warning')
+        
+        # Get the current answer (if any)
+        current_answer = TestAnswer.query.filter_by(
+            test_session_id=test_session.id,
+            question_id=question.id
+        ).first()
+        
+        # Calculate time remaining (30 minutes from start time)
+        start_time = test_session.started_at
+        end_time = start_time + datetime.timedelta(minutes=30)
+        time_remaining = max(0, int((end_time - datetime.datetime.utcnow()).total_seconds()))
+        
+        # Check if time's up
+        if time_remaining <= 0:
+            test_session.status = 'timed_out'
+            test_session.completed_at = datetime.datetime.utcnow()
+            db.session.commit()
+            flash('Time is up! Your test has been submitted.', 'warning')
+            return redirect(url_for('test_results', test_session_id=test_session.id))
+        
+        return render_template(
+            'test_questions.html',
+            test_session_id=test_session.id,
+            question=question,
+            current_question_index=question_index,
+            total_questions=len(questions),
+            time_remaining=time_remaining,
+            current_answer=current_answer
+        )
+    
+    @app.route('/submit-test', methods=['POST'])
+    @login_required
+    def submit_test():
+        test_session_id = request.form.get('test_session_id')
+        
+        if not test_session_id:
+            flash('Invalid request.', 'danger')
+            return redirect(url_for('user_test'))
+        
+        # Verify that this test session belongs to the current user
+        test_session = TestSession.query.filter_by(
+            id=test_session_id,
+            user_id=current_user.id
+        ).first_or_404()
+        
+        # If test is already completed, redirect to results
+        if test_session.status != 'in_progress':
+            flash('This test is already completed.', 'info')
+            return redirect(url_for('test_results', test_session_id=test_session.id))
+        
+        # Calculate score
+        total_questions = TestAnswer.query.filter_by(test_session_id=test_session_id).count()
+        correct_answers = 0
+        
+        # Get all answers for this test session
+        answers = TestAnswer.query.filter_by(test_session_id=test_session_id).all()
+        
+        for answer in answers:
+            if answer.is_correct:
+                correct_answers += 1
+        
+        score = int((correct_answers / total_questions) * 100) if total_questions > 0 else 0
+        
+        # Update test session
+        test_session.completed_at = datetime.datetime.utcnow()
+        test_session.score = score
+        test_session.status = 'completed'
+        
+        # Update test allocation status
+        allocation = TestAllocation.query.filter_by(
+            user_id=current_user.id,
+            test_type_id=test_session.test_type_id,
+            status='allocated'
+        ).first()
+        
+        if allocation:
+            allocation.status = 'completed'
+        
+        db.session.commit()
+        
+        flash('Test completed successfully!', 'success')
+        return redirect(url_for('test_results', test_session_id=test_session.id))
+    
+    @app.route('/test-results/<int:test_session_id>')
+    @login_required
+    def test_results(test_session_id):
+        # Verify that this test session belongs to the current user
+        test_session = TestSession.query.filter_by(
+            id=test_session_id,
+            user_id=current_user.id
+        ).first_or_404()
+        
+        test_type = TestType.query.get(test_session.test_type_id)
+        answers = TestAnswer.query.filter_by(test_session_id=test_session_id).all()
+        
+        return render_template(
+            'test_results.html',
+            test_session=test_session,
+            test_type=test_type,
+            answers=answers
+        )
     
     @app.route('/reports')
     @login_required
