@@ -117,15 +117,19 @@ def register_routes(app):
         ).count()
         test_types_count = TestType.query.count()
 
-        # Get data from database for statistics
-        # We'll add the test attempts stats when that feature is implemented
+        # Get test attempt statistics
+        test_sessions = TestSession.query.filter_by(status='completed').all()
+        total_attempts = len(test_sessions)
+        passed_attempts = sum(1 for session in test_sessions if session.score >= 70)
+        failed_attempts = total_attempts - passed_attempts
+
         stats = {
             'total_students': total_students,
             'new_students': new_students,
             'test_types': test_types_count,
-            'total_attempts': 0,
-            'passed_attempts': 0,
-            'failed_attempts': 0
+            'total_attempts': total_attempts,
+            'passed_attempts': passed_attempts,
+            'failed_attempts': failed_attempts
         }
 
         return render_template('dashboard.html', stats=stats)
