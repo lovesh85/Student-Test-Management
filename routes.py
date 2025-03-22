@@ -485,6 +485,8 @@ def register_routes(app):
 
                 # Update answer
                 test_answer.selected_answer = selected_answer
+                # Update the answer
+                test_answer.selected_answer = selected_answer
                 test_answer.is_correct = (selected_answer == question.correct_answer)
                 db.session.commit()
 
