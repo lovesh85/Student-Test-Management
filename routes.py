@@ -2,7 +2,7 @@ import os
 from flask import render_template, redirect, url_for, flash, request, abort, current_app, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
-from datetime import datetime, timedelta
+import datetime
 import random
 
 from app import db
