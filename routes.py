@@ -599,6 +599,14 @@ def register_routes(app):
         test_session.score = score
         test_session.status = 'completed'
 
+        # Update test type statistics
+        test_type = TestType.query.get(test_session.test_type_id)
+        test_type.total_attempts = (test_type.total_attempts or 0) + 1
+        if score >= 70:
+            test_type.passed_attempts = (test_type.passed_attempts or 0) + 1
+        else:
+            test_type.failed_attempts = (test_type.failed_attempts or 0) + 1
+
         # Update test allocation status
         allocation = TestAllocation.query.filter_by(
             user_id=current_user.id,

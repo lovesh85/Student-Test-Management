@@ -1,161 +1,50 @@
 {% extends 'dashboard_base.html' %}
 
-{% block title %}Test Questions{% endblock %}
-
-{% block extra_css %}
-<style>
-    .question-container {
-        background-color: #fff;
-        border-radius: 8px;
-        padding: 30px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
-    
-    .question-number {
-        font-size: 18px;
-        font-weight: 600;
-        color: #6f42c1;
-        margin-bottom: 15px;
-    }
-    
-    .question-text {
-        font-size: 16px;
-        margin-bottom: 20px;
-    }
-    
-    .question-image {
-        max-width: 100%;
-        margin-bottom: 20px;
-        border-radius: 4px;
-    }
-    
-    .answer-container {
-        margin-bottom: 15px;
-    }
-    
-    .btn-navigation {
-        margin-top: 20px;
-    }
-    
-    .timer-container {
-        background-color: #fff;
-        border-radius: 8px;
-        padding: 15px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .timer {
-        font-size: 24px;
-        font-weight: bold;
-        color: #6f42c1;
-    }
-    
-    .nav-buttons {
-        display: flex;
-        justify-content: space-between;
-    }
-</style>
-{% endblock %}
+{% block title %}Test Question{% endblock %}
 
 {% block content %}
-<div class="timer-container">
-    <div class="timer" id="timer">Time Left: <span id="minutes">30</span>:<span id="seconds">00</span></div>
-</div>
-
-<div class="question-container">
-    <form method="POST" action="{{ url_for('submit_test') }}">
-        <input type="hidden" name="test_session_id" value="{{ test_session_id }}">
-        
-        <div class="question-number">Question {{ current_question_index + 1 }} of {{ total_questions }}</div>
-        
-        <div class="question-text">{{ question.question }}</div>
-        
-        {% if question.question_image %}
-        <img src="{{ url_for('static', filename='uploads/' + question.question_image) }}" alt="Question Image" class="question-image">
-        {% endif %}
-        
-        <div class="answers">
-            <div class="answer-container">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="answer" id="answerA" value="A" {% if current_answer and current_answer.selected_answer == 'A' %}checked{% endif %} required>
-                    <label class="form-check-label" for="answerA">
-                        A. {{ question.answer_a }}
-                    </label>
-                </div>
-            </div>
-            
-            <div class="answer-container">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="answer" id="answerB" value="B" {% if current_answer and current_answer.selected_answer == 'B' %}checked{% endif %}>
-                    <label class="form-check-label" for="answerB">
-                        B. {{ question.answer_b }}
-                    </label>
-                </div>
-            </div>
-            
-            <div class="answer-container">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="answer" id="answerC" value="C" {% if current_answer and current_answer.selected_answer == 'C' %}checked{% endif %}>
-                    <label class="form-check-label" for="answerC">
-                        C. {{ question.answer_c }}
-                    </label>
-                </div>
-            </div>
-            
-            <div class="answer-container">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="answer" id="answerD" value="D" {% if current_answer and current_answer.selected_answer == 'D' %}checked{% endif %}>
-                    <label class="form-check-label" for="answerD">
-                        D. {{ question.answer_d }}
-                    </label>
-                </div>
-            </div>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Question {{ current_question_index + 1 }} of {{ total_questions }}</h4>
         </div>
-        
-        <div class="nav-buttons">
-            {% if current_question_index > 0 %}
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('test_question', test_session_id=test_session_id, question_index=current_question_index-1) }}'">Previous</button>
-            {% else %}
-            <div></div>
-            {% endif %}
-            
-            {% if current_question_index < total_questions - 1 %}
-            <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('test_question', test_session_id=test_session_id, question_index=current_question_index+1) }}'">Next</button>
-            {% else %}
-            <button type="submit" class="btn btn-success">Submit Test</button>
-            {% endif %}
-        </div>
-    </form>
-</div>
-{% endblock %}
+        <div class="card-body">
+            <form method="POST">
+                <div class="question mb-4">
+                    <p class="h5">{{ question.question }}</p>
+                    {% if question.question_image %}
+                    <img src="{{ url_for('static', filename='uploads/' + question.question_image) }}" alt="Question Image" class="img-fluid mb-3">
+                    {% endif %}
+                </div>
 
-{% block extra_js %}
-<script>
-    // Timer functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        let timeRemaining = {{ time_remaining }};
-        const timerDisplay = document.getElementById('timer');
-        const minutesDisplay = document.getElementById('minutes');
-        const secondsDisplay = document.getElementById('seconds');
-        
-        const timerInterval = setInterval(function() {
-            timeRemaining--;
-            
-            if (timeRemaining <= 0) {
-                clearInterval(timerInterval);
-                alert('Time is up! Your test will be submitted automatically.');
-                document.querySelector('form').submit();
-            }
-            
-            const minutes = Math.floor(timeRemaining / 60);
-            const seconds = timeRemaining % 60;
-            
-            minutesDisplay.textContent = minutes.toString().padStart(2, '0');
-            secondsDisplay.textContent = seconds.toString().padStart(2, '0');
-        }, 1000);
-    });
-</script>
+                <div class="options">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="answer" id="optionA" value="A" required>
+                        <label class="form-check-label" for="optionA">{{ question.answer_a }}</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="answer" id="optionB" value="B">
+                        <label class="form-check-label" for="optionB">{{ question.answer_b }}</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="answer" id="optionC" value="C">
+                        <label class="form-check-label" for="optionC">{{ question.answer_c }}</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="answer" id="optionD" value="D">
+                        <label class="form-check-label" for="optionD">{{ question.answer_d }}</label>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    {% if current_question_index == total_questions - 1 %}
+                    <button type="submit" class="btn btn-success">Submit Test</button>
+                    {% else %}
+                    <button type="submit" class="btn btn-primary">Next Question</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

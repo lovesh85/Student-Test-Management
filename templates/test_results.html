@@ -2,218 +2,43 @@
 
 {% block title %}Test Results{% endblock %}
 
-{% block extra_css %}
-<style>
-    .results-container {
-        background-color: #fff;
-        border-radius: 8px;
-        padding: 30px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
-    
-    .test-info {
-        margin-bottom: 30px;
-    }
-    
-    .test-info h2 {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 20px;
-        color: #333;
-    }
-    
-    .test-info-item {
-        margin-bottom: 10px;
-    }
-    
-    .test-info-label {
-        font-weight: 600;
-        color: #6c757d;
-    }
-    
-    .score-display {
-        text-align: center;
-        padding: 20px;
-        margin: 20px 0;
-        border-radius: 8px;
-        background-color: #f8f9fa;
-    }
-    
-    .score-value {
-        font-size: 48px;
-        font-weight: bold;
-        color: #6f42c1;
-    }
-    
-    .score-label {
-        font-size: 16px;
-        color: #6c757d;
-        margin-top: 10px;
-    }
-    
-    .question-list {
-        margin-top: 30px;
-    }
-    
-    .question-item {
-        padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 8px;
-        background-color: #f8f9fa;
-    }
-    
-    .question-text {
-        font-weight: 500;
-        margin-bottom: 10px;
-    }
-    
-    .answer-option {
-        padding: 5px 10px;
-        margin-bottom: 5px;
-        border-radius: 4px;
-    }
-    
-    .correct-answer {
-        background-color: rgba(40, 167, 69, 0.1);
-        border-left: 3px solid #28a745;
-    }
-    
-    .wrong-answer {
-        background-color: rgba(220, 53, 69, 0.1);
-        border-left: 3px solid #dc3545;
-    }
-    
-    .selected-answer {
-        font-weight: 500;
-    }
-    
-    .status-badge {
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    
-    .status-correct {
-        background-color: rgba(40, 167, 69, 0.1);
-        color: #28a745;
-    }
-    
-    .status-incorrect {
-        background-color: rgba(220, 53, 69, 0.1);
-        color: #dc3545;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="results-container">
-    <div class="test-info">
-        <h2>Test Results</h2>
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="test-info-item">
-                    <span class="test-info-label">Test Type:</span>
-                    <span>{{ test_type.test_type }}</span>
-                </div>
-                
-                <div class="test-info-item">
-                    <span class="test-info-label">Language:</span>
-                    <span>{{ test_type.language }}</span>
-                </div>
-                
-                <div class="test-info-item">
-                    <span class="test-info-label">Date Taken:</span>
-                    <span>{{ test_session.started_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                </div>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Test Results</h4>
+        </div>
+        <div class="card-body">
+            <div class="result-summary mb-4">
+                <h5>Score: {{ test_session.score }}%</h5>
+                <p class="mb-1">Test Type: {{ test_type.test_type }}</p>
+                <p class="mb-1">Status: {{ test_session.status|title }}</p>
+                <p class="mb-1">Total Questions: {{ answers|length }}</p>
             </div>
-            
-            <div class="col-md-6">
-                <div class="test-info-item">
-                    <span class="test-info-label">Duration:</span>
-                    <span>
-                        {% if test_session.completed_at %}
-                            {{ (test_session.completed_at - test_session.started_at).total_seconds() // 60 }} minutes
-                        {% else %}
-                            N/A
-                        {% endif %}
-                    </span>
+
+            <div class="questions-review">
+                <h5 class="mb-3">Questions Review</h5>
+                {% for answer in answers %}
+                <div class="question-item card mb-3">
+                    <div class="card-body">
+                        <p class="question-text mb-3">{{ answer.question.question }}</p>
+                        <p class="mb-2">Your Answer: 
+                            <span class="badge {% if answer.is_correct %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ answer.selected_answer or 'Not answered' }}
+                            </span>
+                        </p>
+                        <p class="mb-0">Correct Answer: 
+                            <span class="badge bg-success">{{ answer.question.correct_answer }}</span>
+                        </p>
+                    </div>
                 </div>
-                
-                <div class="test-info-item">
-                    <span class="test-info-label">Status:</span>
-                    <span>
-                        {% if test_session.status == 'completed' %}
-                            Completed
-                        {% elif test_session.status == 'timed_out' %}
-                            Timed Out
-                        {% else %}
-                            In Progress
-                        {% endif %}
-                    </span>
-                </div>
-                
-                <div class="test-info-item">
-                    <span class="test-info-label">Total Questions:</span>
-                    <span>{{ answers|length }}</span>
-                </div>
+                {% endfor %}
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{{ url_for('user_test') }}" class="btn btn-primary">Back to Tests</a>
             </div>
         </div>
-    </div>
-    
-    <div class="score-display">
-        <div class="score-value">{{ test_session.score }}%</div>
-        <div class="score-label">
-            {% if test_session.score >= 70 %}
-                Congratulations! You passed the test.
-            {% else %}
-                You did not pass. Please try again.
-            {% endif %}
-        </div>
-    </div>
-    
-    <div class="question-list">
-        <h3 class="mb-4">Question Details</h3>
-        
-        {% for answer in answers %}
-        <div class="question-item">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <div class="question-text">{{ loop.index }}. {{ answer.question.question }}</div>
-                
-                {% if answer.is_correct %}
-                <span class="status-badge status-correct">Correct</span>
-                {% elif answer.selected_answer %}
-                <span class="status-badge status-incorrect">Incorrect</span>
-                {% else %}
-                <span class="status-badge status-incorrect">Not Answered</span>
-                {% endif %}
-            </div>
-            
-            <div class="answer-options">
-                <div class="answer-option {% if answer.question.correct_answer == 'A' %}correct-answer{% elif answer.selected_answer == 'A' and answer.question.correct_answer != 'A' %}wrong-answer{% endif %} {% if answer.selected_answer == 'A' %}selected-answer{% endif %}">
-                    A. {{ answer.question.answer_a }}
-                </div>
-                
-                <div class="answer-option {% if answer.question.correct_answer == 'B' %}correct-answer{% elif answer.selected_answer == 'B' and answer.question.correct_answer != 'B' %}wrong-answer{% endif %} {% if answer.selected_answer == 'B' %}selected-answer{% endif %}">
-                    B. {{ answer.question.answer_b }}
-                </div>
-                
-                <div class="answer-option {% if answer.question.correct_answer == 'C' %}correct-answer{% elif answer.selected_answer == 'C' and answer.question.correct_answer != 'C' %}wrong-answer{% endif %} {% if answer.selected_answer == 'C' %}selected-answer{% endif %}">
-                    C. {{ answer.question.answer_c }}
-                </div>
-                
-                <div class="answer-option {% if answer.question.correct_answer == 'D' %}correct-answer{% elif answer.selected_answer == 'D' and answer.question.correct_answer != 'D' %}wrong-answer{% endif %} {% if answer.selected_answer == 'D' %}selected-answer{% endif %}">
-                    D. {{ answer.question.answer_d }}
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    
-    <div class="text-center mt-4">
-        <a href="{{ url_for('user_test') }}" class="btn btn-purple">Back to Tests</a>
     </div>
 </div>
 {% endblock %}

@@ -11,6 +11,9 @@ class TestType(db.Model):
     test_type = db.Column(db.String(100), nullable=False)
     language = db.Column(db.String(50), nullable=False)
     created_on = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    total_attempts = db.Column(db.Integer, default=0)
+    passed_attempts = db.Column(db.Integer, default=0)
+    failed_attempts = db.Column(db.Integer, default=0)
     
     # Relationships
     test_masters = db.relationship('TestMaster', back_populates='test_type', cascade='all, delete-orphan')
