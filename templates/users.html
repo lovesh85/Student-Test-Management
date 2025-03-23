@@ -44,24 +44,33 @@
     
     .action-icons {
         display: flex;
+        align-items: center;
+        justify-content: center;
         gap: 10px;
     }
     
     .action-icons a {
         color: #6c757d;
         text-decoration: none;
+        display: flex; 
+        align-items: center;
     }
     
     .action-icons a:hover {
         color: #343a40;
     }
+    td.action-icons {
+        vertical-align: middle;
+    }
     
     .edit-icon {
         color: #6f42c1;
+        font-size: 1.2rem;
     }
     
     .delete-icon {
         color: #dc3545;
+        font-size: 1.2rem;
     }
 </style>
 {% endblock %}
