@@ -651,7 +651,26 @@ def register_routes(app):
     @app.route('/reports')
     @login_required
     def reports():
-        return render_template('reports.html')
+        # Get statistics
+        total_students = User.query.count()
+        test_sessions = TestSession.query.filter_by(status='completed').all()
+        total_attempts = len(test_sessions)
+        passed_attempts = sum(1 for session in test_sessions if session.score >= 70)
+        failed_attempts = total_attempts - passed_attempts
+
+        stats = {
+            'total_students': total_students,
+            'total_attempts': total_attempts,
+            'passed_attempts': passed_attempts,
+            'failed_attempts': failed_attempts
+        }
+
+        # Get test results with related data
+        results = TestSession.query.filter_by(status='completed')\
+            .order_by(TestSession.completed_at.desc())\
+            .all()
+
+        return render_template('reports.html', stats=stats, results=results)
 
     @app.route('/logout')
     @login_required
