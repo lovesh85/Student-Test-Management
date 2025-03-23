@@ -5,57 +5,51 @@
 
 {% block content %}
 <div class="container mt-4">
-    <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Total Students</h5>
-                    <h2 class="text-primary">{{ stats.total_students }}</h2>
+    <div class="row">
+        <!-- Left column: Statistics Cards -->
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card mini-stat">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Students</h6>
+                            <h3 class="text-primary">{{ stats.total_students }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card mini-stat">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Attempts</h6>
+                            <h3 class="text-primary">{{ stats.total_attempts }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card mini-stat">
+                        <div class="card-body">
+                            <h6 class="card-title">Pass/Fail</h6>
+                            <h3><span class="text-success">{{ stats.passed_attempts }}</span>/<span class="text-danger">{{ stats.failed_attempts }}</span></h3>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Total Attempts</h5>
-                    <h2 class="text-primary">{{ stats.total_attempts }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Passed</h5>
-                    <h2 class="text-success">{{ stats.passed_attempts }}</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Failed</h5>
-                    <h2 class="text-danger">{{ stats.failed_attempts }}</h2>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pass/Fail Ratio Chart -->
-    <div class="row mb-4">
-        <div class="col-md-12">
+        
+        <!-- Right column: Chart -->
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <canvas id="passFailChart"></canvas>
+                    <canvas id="passFailChart" style="height: 150px;"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Results Table -->
-    <div class="card">
+    <div class="card mt-4">
         <div class="card-header">
-            <h5>Test Results</h5>
+            <h5 class="mb-0">Test Results</h5>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -94,13 +88,30 @@
     </div>
 </div>
 
+<style>
+.mini-stat {
+    margin-bottom: 15px;
+}
+.mini-stat .card-body {
+    padding: 15px;
+    text-align: center;
+}
+.mini-stat h6 {
+    margin-bottom: 10px;
+    color: #666;
+}
+.mini-stat h3 {
+    margin-bottom: 0;
+}
+</style>
+
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('passFailChart').getContext('2d');
     new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels: ['Passed', 'Failed'],
             datasets: [{
@@ -110,10 +121,13 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-                title: {
-                    display: true,
-                    text: 'Pass/Fail Ratio'
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12
+                    }
                 }
             }
         }
