@@ -82,11 +82,3 @@ If you want to contribute, feel free to fork the repository and submit a pull re
 This project is licensed under the MIT License.
 
 ---
-
-### **Next Steps**
-✅ **Manually update the `README.md` file**  
-✅ **Copy & paste the updated content**  
-✅ **Save the file and commit it**  
-✅ **Push it to GitHub using `git push origin main`**  
-
-Let me know if you need any refinements! 🚀
