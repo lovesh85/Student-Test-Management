@@ -105,5 +105,4 @@ class Config:
 - Export test results as PDFs
 
 ---
-### Author: [LOVESH SHARMA]  
-### GitHub: [Student-Test-Management](https://github.com/lovesh85/Student-Test-Management)
+### Author: [LOVESH SHARMA] 
