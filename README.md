@@ -1,84 +1,109 @@
-Since you implemented **email verification using Google's App Password method**, you should document this in your `README.md`. Here’s how you can update the **"Installation & Setup"** section to include email verification.
-
----
-
-### **Updated `README.md` for Email Verification**
-```md
 # Student Test App
 
-## 📌 Overview
-Student Test App is a web-based application built using **Flask** for the backend, **HTML & CSS** for the frontend, and **PostgreSQL** as the database. The application allows students to take tests and view their results.
+## Project Overview
+The **Student Test App** is a web-based platform for conducting online examinations, built using **Flask** and **PostgreSQL**. It enables students to register, take tests, and track their performance, while administrators can manage users, test types, and monitor analytics through an interactive dashboard.
 
-## 🚀 Features
-- User authentication (Login & Signup)
-- Email verification using Google App Password
-- Create and manage tests
-- Submit answers and get instant results
-- Admin panel for managing tests and students
+## Features
+### User Registration & Authentication
+- Email verification to prevent spam accounts
+- Secure password hashing
+- User session management with Flask-Login
 
-## 🛠️ Tech Stack
-- **Frontend:** HTML, CSS
-- **Backend:** Flask
+### Test Management
+- Create and manage different test types
+- Add and edit questions
+- Auto-scoring system for quick results
+
+### Examination Process
+- Select and attempt tests
+- Submit answers and receive instant results
+- Time tracking for tests
+
+### Dashboard & Analytics
+- Students: View past test scores and progress trends
+- Admins: Monitor test performance, user activity, and statistics
+- Interactive charts using **Chart.js**
+
+### Reports & Insights
+- Track test attempts and student performance
+- Generate pass/fail summaries
+- Identify trends in test performance
+
+## Technologies Used
+- **Backend:** Flask (Python), Flask-Mail, Flask-Login, SQLAlchemy
+- **Frontend:** HTML, CSS, Bootstrap
 - **Database:** PostgreSQL
-- **Authication** Google
-- **Hosting:** Replit
+- **Security:** Password Hashing, Secure Sessions
 
-## 🔧 Installation & Setup
+## Installation Guide
 
-### Clone the Repository
-```sh
-git clone https://github.com/lovesh85/Student-App.git
-cd Student-App
+### Prerequisites
+- Python (>=3.8)
+- PostgreSQL
+- Virtual Environment (recommended)
+
+### Setup Instructions
+1. Download the project files and extract them into a folder.
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   ```
+   On Windows:
+   ```bash
+   venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Set up the database:
+   - Create a PostgreSQL database.
+   - Update `config.py` with your database and email credentials.
+   - Run database migrations:
+     ```bash
+     flask db init
+     flask db migrate -m "Initial migration"
+     flask db upgrade
+     ```
+5. Run the application:
+   ```bash
+   flask run
+   ```
+   The app will be accessible at `http://127.0.0.1:5000/`.
+
+## Configuration
+Update the `config.py` file with your PostgreSQL and email SMTP settings:
+```python
+class Config:
+    SECRET_KEY = 'your_secret_key'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://username:password@localhost/student_test_db'
+    MAIL_SERVER = 'smtp.yourmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = 'your-email@example.com'
+    MAIL_PASSWORD = 'your-email-password'
 ```
 
-### Install Dependencies
-Create a virtual environment (optional but recommended) and install dependencies:
-```sh
-pip install -r requirements.txt
+## Folder Structure
+```
+/student-test-app
+│── /static          # Static assets (CSS, JS, images)
+│── /templates       # HTML templates
+│── config.py        # Application configuration
+│── extensions.py    # Flask extensions setup
+│── models.py        # Database models
+│── app.py           # Main application file
+│── requirements.txt # Dependencies list
+│── README.md        # Documentation
 ```
 
-### Configure Environment Variables
-Create a `.env` file in the project root and add the following:
-
-```ini
-DATABASE_URL=your_postgresql_connection_string
-SECRET_KEY=your_secret_key
-
-# Email Configuration (For Google App Password)
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME=your_email@gmail.com
-MAIL_PASSWORD=your_google_app_password
-MAIL_DEFAULT_SENDER=your_email@gmail.com
-```
-
-### **How to Get a Google App Password**
-Since Google no longer allows less secure apps, you need to generate an **App Password**:
-1. Go to **[Google Account Security](https://myaccount.google.com/security)**.
-2. Scroll down to **"Signing in to Google"** and enable **2-Step Verification**.
-3. After enabling, go to **"App Passwords"** and generate a new one.
-4. Use the generated password in the `MAIL_PASSWORD` variable above.
-
-### Run the Application
-```sh
-flask run
-```
-The app will be available at **`http://127.0.0.1:5000/`**.
-
-## 📧 Email Verification Process
-1. After signing up, the user receives a **verification email** with a unique activation link.
-2. The user must click the **activation link** to verify their account.
-3. If the user doesn’t verify within a certain period, they must request a **new verification email**.
-4. Only verified users can log in.
-
-## 📸 Screenshots
-*(Add screenshots of your email verification page and the app here if possible)*
-
-## 🤝 Contributing
-If you want to contribute, feel free to fork the repository and submit a pull request.
-
-## 📜 License
-This project is licensed under the MIT License.
+## Future Enhancements
+- Role-based access control (Admin, Student, Teacher)
+- Timer-based test attempts
+- Advanced analytics with AI-driven insights
+- Multi-language support
+- Export test results as PDFs
 
 ---
+### Author: [LOVESH SHARMA]  
+### GitHub: [Student-Test-Management](https://github.com/lovesh85/Student-Test-Management)
